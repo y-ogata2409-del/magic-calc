@@ -366,7 +366,7 @@
         const operatorCount = (currentFormulaInternal.match(/\*/g) || []).length;
         
         if (magicConfig.isActive && operatorCount >= 3) {
-          if (magicConfig.type === "日時を表示") {
+          if (magicConfig.type === "日時") {
             const now = new Date();
             const delay = Number(magicConfig.value) || 0;
             now.setSeconds(now.getSeconds() + delay);
