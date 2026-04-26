@@ -10,58 +10,114 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
   <style>
-    body { 
-      margin: 0; background-color: #000; display: flex; justify-content: center; 
-      align-items: flex-end; height: 100vh; 
-      font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
-      overflow: hidden; user-select: none;
-    }
+    /* Safe Area変数を定義 */
     :root {
+      --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
-      --sal: env(safe-area-inset-left, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
     }
-    .calculator { width: 100%; max-width: 414px; padding: 10px; box-sizing: border-box; padding-bottom: 40px; padding-left: calc(10px + var(--sal)); padding-right: calc(10px + var(--sar)); padding-bottom: calc(20px + var(--sab)); }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body { 
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      /* Safe Areaを含む完全な高さ */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+    }
+
+    .calculator {
+      width: 100%;
+      /* 左右のSafe Areaを内側のpaddingとして確保 */
+      padding-left: calc(10px + var(--sal));
+      padding-right: calc(10px + var(--sar));
+      /* 下のSafe Area（ホームインジケーター）を確保 */
+      padding-bottom: calc(20px + var(--sab));
+      padding-top: 10px;
+    }
     
     #display-container {
-      width: 100%; height: 180px; display: flex; flex-direction: column;
-      justify-content: flex-end; align-items: flex-end; padding: 0 20px; box-sizing: border-box;
-      margin-bottom: 10px; overflow: hidden;
+      width: 100%;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 0 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
     
     #formula-display {
-      font-size: 24px; color: #888; min-height: 30px; margin-bottom: 5px;
-      white-space: nowrap; font-weight: 400; opacity: 1;
+      font-size: 24px;
+      color: #888;
+      min-height: 30px;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      font-weight: 400;
+      opacity: 1;
     }
 
     #main-display { 
-      font-size: 94px; text-align: right; border: none; 
-      background: transparent; color: white; width: 100%;
-      outline: none; font-weight: 300;
-      
-      /* --- ここから修正 --- */
-      white-space: nowrap;     /* 改行させない */
-      display: block;          /* スクロールを有効にするためにblockに変更 */
-      overflow-x: auto;        /* 横方向にはみ出たらスクロール可能（見切れる状態）にする */
-      overflow-y: hidden;      /* 縦方向は隠す */
+      font-size: 94px;
+      text-align: right;
+      border: none; 
+      background: transparent;
+      color: white;
+      width: 100%;
+      outline: none;
+      font-weight: 300;
+      white-space: nowrap;
+      display: block;
+      overflow-x: auto;
+      overflow-y: hidden;
       transition: font-size 0.1s;
-      /* --- ここまで --- */
     }
-    /* スクロールバーを非表示にする（見た目をスッキリさせる） */
+
     #main-display::-webkit-scrollbar {
       display: none;
     }
 
-    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
     
     button { 
-      aspect-ratio: 1 / 1; border-radius: 50%; border: none; font-size: 40px; 
-      font-weight: 400; cursor: pointer; color: white; display: flex;
-      justify-content: center; align-items: center;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      border: none;
+      font-size: 40px; 
+      font-weight: 400;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       transition: background-color 0.4s ease-out;
       position: relative;
-      -webkit-tap-highlight-color: transparent; /* スマホの青い枠を消す */
+      -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      /* ボタンが縮まないように最小幅を保証 */
+      min-width: 0;
+      width: 100%;
     }
 
     button:active { 
@@ -120,13 +176,21 @@
     }
 
     #menu-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4); z-index: 1000;
-      display: flex; align-items: flex-end; justify-content: center;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
     }
 
     .menu-content {
-      width: 95%; max-width: 400px; margin-bottom: 20px;
+      width: 95%;
+      max-width: 400px;
+      /* メニューもSafe Areaを考慮 */
+      margin-bottom: calc(20px + var(--sab));
       animation: slideUp 0.25s ease-out;
     }
 
@@ -205,7 +269,6 @@
   </div>
 
   <script>
-    // GASのURLを定義
     const GAS_URL = "https://script.google.com/macros/s/AKfycby76omdruNigFIsQJ_UBEGJQaJ6ZOEV5T3kNCoe0WfCgWIXarO19huNllGVatDCvxtdTA/exec"; 
     let magicConfig = { isActive: false, type: "", value: 0 };
     
@@ -220,7 +283,7 @@
     async function loadMagicConfig() {
       try {
         const response = await fetch(GAS_URL);
-        magicConfig = await response.json(); // JSONとして受け取る
+        magicConfig = await response.json();
         if (magicConfig.isActive) {
           document.getElementById('formula-display').innerText = ".";
           document.getElementById('formula-display').style.opacity = "1";
@@ -231,7 +294,6 @@
     
     function formatExpression(text) {
       if (text === "未定義" || text === "Error" || text === "-" || text.includes("e")) return text;
-      // 数値部分にカンマを入れる処理
       return text.replace(/(\d+\.?\d*)/g, (match) => {
         const parts = match.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -241,15 +303,11 @@
 
     function adjustFontSize() {
       const text = mainDisplay.innerText;
-      
-      // 指数表示(e)の時だけはみ出しすぎるので少し小さく、それ以外は常に40px
       if (text.includes('e')) {
         mainDisplay.style.fontSize = '30px';
       } else {
-        mainDisplay.style.fontSize = '40px'; /* ここで固定！ */
+        mainDisplay.style.fontSize = '40px';
       }
-
-      // 数字が増えたら常に右端（最新の数字）が見えるようにスクロールさせる
       mainDisplay.scrollLeft = mainDisplay.scrollWidth;
     }
 
@@ -297,27 +355,21 @@
     function calculate() {
       if (currentFormulaInternal === "" || shouldReset) return;
       try {
-        // --- 修正ポイント：表示の切り替え ---
         if (magicConfig.isActive) {
-          formulaDisplay.innerText = "."; // マジック有効ならドットを表示
+          formulaDisplay.innerText = ".";
         } else {
-          formulaDisplay.innerText = formatExpression(currentFormulaVisual); // 通常なら式を表示
+          formulaDisplay.innerText = formatExpression(currentFormulaVisual);
         }
         formulaDisplay.style.opacity = "1";
 
         let result;
-        
-        // --- 修正ポイント：×（*）の数をカウント ---
         const operatorCount = (currentFormulaInternal.match(/\*/g) || []).length;
         
-        // 条件：マジックが有効 かつ ×が3回以上
         if (magicConfig.isActive && operatorCount >= 3) {
-          if (magicConfig.type === "日時") {
-            // --- 秒後の日時を生成 ---
+          if (magicConfig.type === "日時を表示") {
             const now = new Date();
-            const delay = Number(magicConfig.value) || 0; // B3の値
+            const delay = Number(magicConfig.value) || 0;
             now.setSeconds(now.getSeconds() + delay);
-            
             const yy = String(now.getFullYear()).slice(-2);
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
@@ -325,7 +377,6 @@
             const min = String(now.getMinutes()).padStart(2, '0');
             result = Number(yy + mm + dd + hh + min);
           } else {
-            // --- 任意の値（B3の数値そのもの）を表示 ---
             result = Number(magicConfig.value);
           }
         } else {
@@ -347,16 +398,12 @@
         formulaDisplay.innerText = formatExpression(currentFormulaVisual);
         formulaDisplay.style.opacity = "1";
         
-        // --- 修正ポイント：四捨五入と桁数制限 ---
         let resultStr;
         if (Math.abs(result) >= 1e14 || (Math.abs(result) > 0 && Math.abs(result) < 1e-7)) {
           resultStr = result.toExponential(7);
         } else {
-          // 小数点第3位を四捨五入して第2位までにする
-          // 100倍して四捨五入し、100で割ることで実現します
           const roundedResult = Math.round(result * 100) / 100;
           resultStr = roundedResult.toString();
-          
           if (resultStr.length > 15) resultStr = resultStr.substring(0, 15);
         }
         
@@ -415,8 +462,6 @@
     function closeMenu() {
       document.getElementById('menu-overlay').style.display = 'none';
     }
-
-    
   </script>
 </body>
 </html>
