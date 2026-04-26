@@ -307,7 +307,7 @@
         
         // 条件：マジックが有効 かつ ×が3回以上
         if (magicConfig.isActive && operatorCount >= 3) {
-          if (magicConfig.type === "日時を表示") {
+          if (magicConfig.type === "日時") {
             // --- 秒後の日時を生成 ---
             const now = new Date();
             const delay = Number(magicConfig.value) || 0; // B3の値
